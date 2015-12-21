@@ -5,7 +5,7 @@ require 'open-uri'
 
 #return if params[:token] != ENV['SLACK_TOKEN']
 
-get '/' do
+get '/word' do
   @doc = Nokogiri::HTML(open("http://feeds.feedblitz.com/german-word-of-the-day"))
 
   title = @doc.css('title').text
