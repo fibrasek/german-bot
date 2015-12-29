@@ -6,21 +6,18 @@ require 'open-uri'
 #return if params[:token] != ENV['SLACK_TOKEN']
 
 get '/word' do
-  @doc = Nokogiri::HTML(open("http://feeds.feedblitz.com/german-word-of-the-day"))
+  @doc = Nokogiri::XML(open("http://feeds.feedblitz.com/german-word-of-the-day"))
 
-  title = @doc.css('title').text
+  @content = Nokogiri::HTML(@doc.xpath('//content:encoded')[0].content)
+
+  title = @doc.xpath("//title")[0].text
   word = @doc.xpath("//title")[1].text
-  word_type = @doc.css('td')[0].text
-  german_sentence = @doc.css('td')[1].text
-  english_sentence = @doc.css('td')[2].text
 
-  msg = [
-    "#{title}",
-    "Word: #{word}",
-    "Word type: #{word_type}",
-    "German Sentence: #{german_sentence}",
-    "English Sentence: #{english_sentence}"
-  ]
+  word_type = @content.css('td')[0].text
+  german_sentence = @content.css('td')[1].text
+  english_sentence = @content.css('td')[2].text
+
+  msg = "#{title}\nWord: #{word}\nWord type: #{word_type}\nGerman Sentence: #{german_sentence}\nEnglish Sentence: #{english_sentence}"
 
   respond_message msg
 end
@@ -28,11 +25,7 @@ end
 def respond_message message
   content_type :json
 
-  resp = { text: []}
-
-  message.each do | msg |
-    resp[:text] << msg
-  end
+  resp = { text: message}
 
   resp.to_json
 end
